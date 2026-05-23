@@ -15,7 +15,7 @@ let package = Package(
   targets: [
     .target(
       name: "SimKit",
-      path: "Sources/SimKit",
+      path: "Sources",
       swiftSettings: [
         .swiftLanguageMode(.v6),
         // Approachable Concurrency — enables `@concurrent` and nonisolated-nonsending
