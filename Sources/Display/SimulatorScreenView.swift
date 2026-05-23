@@ -189,6 +189,17 @@ public final class SimulatorScreenView: MTKView {
     return input.button(button, duration: duration)
   }
 
+  /// Drive a hardware button's pressed state directly so callers can synthesise an
+  /// arbitrary hold duration (e.g. mouse-down → mouse-up). Pair `setButton(_, pressed: true)`
+  /// with a later `setButton(_, pressed: false)` — failing to release leaves the simulator
+  /// believing the button is still held. Returns false for gesture-based "buttons" that
+  /// don't model as a simple down/up pair.
+  @discardableResult
+  public func setButton(_ button: DeviceButton, pressed: Bool) -> Bool {
+    guard let input else { return false }
+    return input.setButton(button, pressed: pressed)
+  }
+
   /// Send one key with optional modifiers.
   @discardableResult
   public func sendKey(

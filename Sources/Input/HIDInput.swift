@@ -207,6 +207,35 @@ final class HIDInput: @unchecked Sendable {
     return touchIdentifierCounter
   }
 
+  /// Sends a single button down (`pressed = true`) or up (`pressed = false`) HID event
+  /// without an internal sleep — pair them yourself to simulate an arbitrary hold
+  /// duration that tracks a real-world gesture (mouse hold, swipe-and-hold, etc.).
+  /// Returns false for buttons that aren't expressible as a simple down/up pair
+  /// (gesture-based "buttons" like App Switcher).
+  @discardableResult
+  func setButton(_ button: DeviceButton, pressed: Bool) -> Bool {
+    guard let c = ensureWarm() else { return false }
+    let direction: UInt32 = pressed ? 1 : 2
+    switch button {
+    case .home, .lock:
+      guard let bfn = buttonFn else { return false }
+      let (arg0, target) = buttonCodes(for: button)
+      guard let msg = bfn(arg0, direction, target) else { return false }
+      send(message: msg, to: c)
+      return true
+    case .power, .volumeUp, .volumeDown, .action,
+      .digitalCrown, .sideButton, .leftSideButton:
+      guard let kfn = hidArbFn, let usage = button.standardHIDUsage else { return false }
+      guard let msg = kfn(Self.touchDigitizer, usage.page, usage.usage, direction) else { return false }
+      send(message: msg, to: c)
+      return true
+    case .appSwitcher, .swipeToAppSwitcher, .swipeToHome,
+      .pullDownToLockScreen, .pullDownToNotificationCenter:
+      // Gesture-based — no meaningful "held" state.
+      return false
+    }
+  }
+
   func button(_ button: DeviceButton, duration: Double) -> Bool {
     guard let c = ensureWarm() else { return false }
     let holdUs = holdMicroseconds(for: duration)
