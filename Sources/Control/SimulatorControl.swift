@@ -66,6 +66,52 @@ public enum SimulatorControl: Sendable {
     await runSimctl(["pbpaste", udid])
   }
 
+  /// Sync one simulator's pasteboard onto another (or use `"host"` as source or
+  /// destination to swap with the macOS host clipboard).
+  @discardableResult
+  public static func syncPasteboard(from sourceUDID: String, to destinationUDID: String) async -> Bool {
+    await runSimctl(["pbsync", sourceUDID, destinationUDID])
+  }
+
+  // MARK: - Logging
+
+  /// Toggle verbose system-log output for a booted device. Note: the device may need to be
+  /// rebooted before the change takes full effect.
+  @discardableResult
+  public static func setLogVerbose(_ enabled: Bool, udid: String) async -> Bool {
+    await runSimctl(["logverbose", udid, enabled ? "enable" : "disable"])
+  }
+
+  // MARK: - Diagnostics
+
+  /// Run `simctl diagnose` to collect a logs+plists archive. Pass an empty `udids` list to
+  /// collect from every booted device. Returns the on-disk path of the produced archive,
+  /// or `nil` on failure.
+  @concurrent
+  public static func diagnose(udids: [String] = [], includeAppDataContainers: Bool = false) async -> URL? {
+    let outputDir = FileManager.default.temporaryDirectory
+      .appending(path: "SimKit-Diagnose-\(UUID().uuidString)")
+    var args = ["diagnose", "-b", "--output", outputDir.path(percentEncoded: false)]
+    if includeAppDataContainers {
+      args.append("--data-containers")
+    }
+    for udid in udids {
+      args += ["--udid", udid]
+    }
+    let process = Process()
+    process.executableURL = URL(filePath: "/usr/bin/xcrun")
+    process.arguments = ["simctl"] + args
+    process.standardOutput = Pipe()
+    process.standardError = Pipe()
+    do { try process.run() } catch { return nil }
+    process.waitUntilExit()
+    guard process.terminationStatus == 0,
+      let archive = (try? FileManager.default.contentsOfDirectory(at: outputDir, includingPropertiesForKeys: nil))?
+        .first(where: { $0.pathExtension == "tar" || $0.lastPathComponent.contains(".tar") })
+    else { return nil }
+    return archive
+  }
+
   // MARK: - Notifications (memory warning, iCloud sync, etc.)
 
   /// Forces a UIApplicationDidReceiveMemoryWarning notification inside the simulator.
