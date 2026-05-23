@@ -58,10 +58,16 @@ using `.swift-format`.
 ## Project layout
 
 ```
-Sources/SimKit/
-  Public/         — user-facing types
-  Internal/       — framebuffer, HID, Metal renderer, dlopen runtime
-  ObjCRuntime/    — Obj-C method-IMP invocation helpers
+Sources/
+  Display/   — SimulatorScreen, SimulatorScreenView, MetalRenderer,
+               SimulatorFramebuffer, SimulatorInteractionState
+  Input/     — Device buttons / edges / keys / sizes, plus the HID
+               dispatchers (HIDInput, IOHIDDigitizerDispatch)
+  Control/   — simctl/mach wrappers (Biometrics, Control, Location,
+               Orientation, StatusBar)
+  Runtime/   — Framework bridging (CoreSimulatorRuntime, SimDeviceResolver,
+               RuntimeInvoke / dlerrorString)
+  SimKitError.swift
 ```
 
 ## Concurrency

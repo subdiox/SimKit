@@ -8,6 +8,11 @@ import Foundation
 /// `xcrun simctl` themselves with `simctl spawn` etc.).
 public enum SimulatorControl: Sendable {
 
+  public enum Appearance: String, Sendable, CaseIterable {
+    case light
+    case dark
+  }
+
   // MARK: - Device
 
   /// Wipes the simulator's contents and settings. **Destructive** — caller is responsible

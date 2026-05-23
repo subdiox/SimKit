@@ -53,3 +53,10 @@ enum RuntimeInvoke {
     return unsafeBitCast(imp, to: Fn.self)(cls, selector, arg, &error) as? Result
   }
 }
+
+/// Free-function `dlerror()` → Swift string. Used by anywhere that calls `dlopen` / `dlsym`
+/// and wants the diagnostic on failure.
+func dlerrorString() -> String {
+  guard let raw = dlerror() else { return "(no dlerror)" }
+  return String(cString: raw)
+}

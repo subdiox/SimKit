@@ -4,6 +4,13 @@ import Foundation
 /// `xcrun simctl location` wrappers. Mirrors Simulator.app's `Features → Location` menu.
 public enum SimulatorLocation: Sendable {
 
+  public enum PresetRoute: String, Sendable, CaseIterable {
+    case cityRun = "city_run"
+    case cityBicycleRide = "city_bicycle"
+    case freewayDrive = "freeway_drive"
+    case appleHQ = "apple"
+  }
+
   /// Clears any host-side location override; the simulator falls back to whatever
   /// CoreLocation would normally produce (typically nothing).
   @discardableResult
