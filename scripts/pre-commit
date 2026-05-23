@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+# Formats every staged Swift file with `swift format` (Xcode-bundled, Swift 6.3+) and
+# re-stages it so the commit picks up the formatted version. Skips deletes and binary
+# files, and bails out early if `swift` isn't on PATH. Written to run under the system
+# bash 3.2 that ships with macOS, so no `mapfile`/`readarray`.
+set -euo pipefail
+
+if ! command -v swift >/dev/null 2>&1; then
+    echo "pre-commit: 'swift' not found on PATH; skipping format" >&2
+    exit 0
+fi
+
+repo_root=$(git rev-parse --show-toplevel)
+config="$repo_root/.swift-format"
+formatted=0
+
+# Loop through staged Swift files that are still present (added/modified/renamed/copied).
+while IFS= read -r file; do
+    [[ -z "$file" ]] && continue
+    path="$repo_root/$file"
+    [[ -f "$path" ]] || continue
+    if swift format --in-place --configuration "$config" "$path"; then
+        git add -- "$path"
+        formatted=$((formatted + 1))
+    else
+        echo "pre-commit: swift format failed on $file" >&2
+        exit 1
+    fi
+done < <(git diff --cached --name-only --diff-filter=ACMR -- '*.swift')
+
+if [[ $formatted -gt 0 ]]; then
+    echo "pre-commit: swift-formatted $formatted file(s)"
+fi

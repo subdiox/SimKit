@@ -1,4 +1,4 @@
-// swift-tools-version: 6.0
+// swift-tools-version: 6.3
 import PackageDescription
 
 // SimulatorKit + CoreSimulator are deliberately NOT linked here. Nothing in Sources/
@@ -7,20 +7,22 @@ import PackageDescription
 // LC_LOAD_DYLIB entries that dyld must resolve before main(), which fails for users
 // whose Xcode lives outside `/Applications/Xcode.app`.
 let package = Package(
-    name: "SimulatorView",
-    platforms: [.macOS(.v14)],
-    products: [
-        .library(name: "SimulatorView", targets: ["SimulatorView"])
-    ],
-    targets: [
-        .target(
-            name: "SimulatorView",
-            path: "Sources/SimulatorView"
-        ),
-        .testTarget(
-            name: "SimulatorViewTests",
-            dependencies: ["SimulatorView"],
-            path: "Tests/SimulatorViewTests"
-        )
-    ]
+  name: "SimKit",
+  platforms: [.macOS(.v14)],
+  products: [
+    .library(name: "SimKit", targets: ["SimKit"])
+  ],
+  targets: [
+    .target(
+      name: "SimKit",
+      path: "Sources/SimKit",
+      swiftSettings: [
+        .swiftLanguageMode(.v6),
+        // Approachable Concurrency — enables `@concurrent` and nonisolated-nonsending
+        // semantics so I/O methods can opt into the cooperative pool explicitly.
+        .enableUpcomingFeature("NonisolatedNonsendingByDefault"),
+        .enableUpcomingFeature("InferIsolatedConformances"),
+      ]
+    )
+  ]
 )
