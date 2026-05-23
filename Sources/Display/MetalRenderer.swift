@@ -278,8 +278,8 @@ final class MetalRenderer {
                 // 1-pixel anti-aliased fill / border, blended at a fixed alpha so the
                 // simulator content stays readable through the touch indicator.
                 float border = max(r * 0.05, 1.5);
-                float3 fill   = float3(0.78);
-                float3 stroke = float3(0.55);
+                float3 fill   = float3(0.45);
+                float3 stroke = float3(0.25);
                 float t = smoothstep(r - border - 1.0, r - border, d);
                 float3 c = mix(fill, stroke, t);
                 float edge = 1.0 - smoothstep(r - 1.0, r, d);
