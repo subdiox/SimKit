@@ -275,14 +275,16 @@ final class MetalRenderer {
             float r = touches[i].radius;
             float d = distance(pixel, touches[i].position);
             if (d <= r) {
-                // 1-pixel anti-aliased fill / border.
+                // 1-pixel anti-aliased fill / border, blended at a fixed alpha so the
+                // simulator content stays readable through the touch indicator.
                 float border = max(r * 0.05, 1.5);
                 float3 fill   = float3(0.78);
                 float3 stroke = float3(0.55);
                 float t = smoothstep(r - border - 1.0, r - border, d);
                 float3 c = mix(fill, stroke, t);
                 float edge = 1.0 - smoothstep(r - 1.0, r, d);
-                color = float4(mix(color.rgb, c, edge), 1.0);
+                float alpha = edge * 0.55;
+                color = float4(mix(color.rgb, c, alpha), 1.0);
             }
         }
         return color;
